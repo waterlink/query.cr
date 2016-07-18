@@ -76,18 +76,95 @@ module Query
       )
     end
 
-    # it "can be used to append things" do
-    #   q = EmptyQuery.new
-    #   query_hash = {"number_of_dependents" => 0}
-    #
-    #   query_hash.each do |key, value|
-    #     q = q.& criteria(key) == value
-    #   end
-    #
-    #   q.should eq(
-    #     Equals.new(Criteria.new("number_of_dependents"), 0)
-    #   )
-    # end
+    it "can be used to append things" do
+      q = EmptyQuery.new
+      query_hash = {"number_of_dependents" => 0, "age" => 25, "stuff" => "hello world"}
+
+      query_hash.each do |key, value|
+        q = q.& criteria(key) == value
+      end
+
+      q.should eq(
+        And.new(
+          And.new(
+            (criteria("number_of_dependents") == 0),
+            (criteria("age") == 25)
+          ),
+          (criteria("stuff") == "hello world")
+        )
+      )
+    end
+  end
+
+  describe Or do
+    it "can unify two queries" do
+      ((criteria("age") < 16) | (criteria("age") > 64)).should eq(
+        Or.new((criteria("age") < 16), (criteria("age") > 64))
+      )
+    end
+
+    it "can be used to append things" do
+      q = EmptyQuery.new
+      query_hash = {"number_of_dependents" => 0, "age" => 25, "stuff" => "hello world"}
+
+      query_hash.each do |key, value|
+        q = q.| criteria(key) == value
+      end
+
+      q.should eq(
+        Or.new(
+          Or.new(
+            (criteria("number_of_dependents") == 0),
+            (criteria("age") == 25)
+          ),
+          (criteria("stuff") == "hello world")
+        )
+      )
+    end
+  end
+
+  describe "combining And and Or" do
+    it "can be used to append things with And and Or interchangeably" do
+      q = EmptyQuery.new
+      query_hash = {"number_of_dependents" => 0, "age" => 25, "stuff" => "hello world"}
+
+      i = 0
+      query_hash.each do |key, value|
+        if i % 2 == 0
+          q = q.| criteria(key) == value
+        else
+          q = q.& criteria(key) == value
+        end
+
+        i += 1
+      end
+
+      q.should eq(
+        Or.new(
+          And.new(
+            (criteria("number_of_dependents") == 0),
+            (criteria("age") == 25)
+          ),
+          (criteria("stuff") == "hello world")
+        )
+      )
+    end
+  end
+
+  describe IsTrue do
+    it "works" do
+      (criteria("has_dependents").is_true).should eq(
+        IsTrue.new(criteria("has_dependents"))
+      )
+    end
+  end
+
+  describe In do
+    it "works" do
+      (criteria("age").in([18, 19, 20, 21])).should eq(
+        In.new(criteria("age"), [18, 19, 20, 21])
+      )
+    end
   end
 
   describe Equals do
