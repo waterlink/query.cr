@@ -45,6 +45,15 @@ module Query
 
     u_operator "not", Not
 
+    u_operator "is_true", IsTrue
+    u_operator "is_not_true", IsNotTrue
+    u_operator "is_false", IsFalse
+    u_operator "is_not_false", IsNotFalse
+    u_operator "is_unknown", IsUnknown
+    u_operator "is_not_unknown", IsNotUnknown
+    u_operator "is_null", IsNull
+    u_operator "is_not_null", IsNotNull
+
     def inspect(io)
       io << "Query"
     end
@@ -186,14 +195,5 @@ module Query
     bi_operator ">", MoreThan
     bi_operator ">=", MoreThanOrEqual
     bi_operator "in", In
-
-    u_operator "is_true", IsTrue
-    u_operator "is_not_true", IsNotTrue
-    u_operator "is_false", IsFalse
-    u_operator "is_not_false", IsNotFalse
-    u_operator "is_unknown", IsUnknown
-    u_operator "is_not_unknown", IsNotUnknown
-    u_operator "is_null", IsNull
-    u_operator "is_not_null", IsNotNull
   end
 end
