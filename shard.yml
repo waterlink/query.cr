@@ -1,7 +1,6 @@
+--- 
 name: query
-version: 0.1.0
-
-authors:
+version: 0.1.1
+authors: 
   - Oleksii Fedorov <waterlink000@gmail.com>
-
 license: MIT
