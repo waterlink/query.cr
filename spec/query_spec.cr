@@ -78,11 +78,9 @@ module Query
 
     it "can be used to append things" do
       q = EmptyQuery.new
-      query_hash = {"number_of_dependents" => 0, "age" => 25, "stuff" => "hello world"}
-
-      query_hash.each do |key, value|
-        q = q.& criteria(key) == value
-      end
+      q = q.& criteria("number_of_dependents") == 0
+      q = q.& criteria("age") == 25
+      q = q.& criteria("stuff") == "hello world"
 
       q.should eq(
         And.new(
@@ -105,11 +103,9 @@ module Query
 
     it "can be used to append things" do
       q = EmptyQuery.new
-      query_hash = {"number_of_dependents" => 0, "age" => 25, "stuff" => "hello world"}
-
-      query_hash.each do |key, value|
-        q = q.| criteria(key) == value
-      end
+      q = q.| criteria("number_of_dependents") == 0
+      q = q.| criteria("age") == 25
+      q = q.| criteria("stuff") == "hello world"
 
       q.should eq(
         Or.new(
@@ -126,18 +122,12 @@ module Query
   describe "combining And and Or" do
     it "can be used to append things with And and Or interchangeably" do
       q = EmptyQuery.new
+
       query_hash = {"number_of_dependents" => 0, "age" => 25, "stuff" => "hello world"}
 
-      i = 0
-      query_hash.each do |key, value|
-        if i % 2 == 0
-          q = q.| criteria(key) == value
-        else
-          q = q.& criteria(key) == value
-        end
-
-        i += 1
-      end
+      q = q.| criteria("number_of_dependents") == 0
+      q = q.& criteria("age") == 25
+      q = q.| criteria("stuff") == "hello world"
 
       q.should eq(
         Or.new(
