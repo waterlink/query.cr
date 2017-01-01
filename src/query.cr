@@ -7,13 +7,13 @@ module Query
 
   module MacroHelper
     macro bi_operator(name, klass)
-      def {{name.id}}(other) : Query
+      def {{name.id}}(other)
         {{klass.id}}.new(self, other)
       end
     end
 
     macro u_operator(name, klass)
-      def {{name.id}} : Query
+      def {{name.id}}
         {{klass.id}}.new(self)
       end
     end
@@ -80,11 +80,11 @@ module Query
     end
   end
 
-  class BiOperator(T) < Query
+  class BiOperator(Q, T) < Query
     getter left
     getter right
 
-    def initialize(@left : Query, @right : T)
+    def initialize(@left : Q, @right : T)
     end
 
     def ==(other : self)
@@ -101,40 +101,40 @@ module Query
     end
   end
 
-  class Equals(T) < BiOperator(T)
+  class Equals(Q, T) < BiOperator(Q, T)
   end
 
-  class NotEquals(T) < BiOperator(T)
+  class NotEquals(Q, T) < BiOperator(Q, T)
   end
 
-  class LessThan(T) < BiOperator(T)
+  class LessThan(Q, T) < BiOperator(Q, T)
   end
 
-  class LessThanOrEqual(T) < BiOperator(T)
+  class LessThanOrEqual(Q, T) < BiOperator(Q, T)
   end
 
-  class MoreThan(T) < BiOperator(T)
+  class MoreThan(Q, T) < BiOperator(Q, T)
   end
 
-  class MoreThanOrEqual(T) < BiOperator(T)
+  class MoreThanOrEqual(Q, T) < BiOperator(Q, T)
   end
 
-  class And(T) < BiOperator(T)
+  class And(Q, T) < BiOperator(Q, T)
   end
 
-  class Or(T) < BiOperator(T)
+  class Or(Q, T) < BiOperator(Q, T)
   end
 
-  class Xor(T) < BiOperator(T)
+  class Xor(Q, T) < BiOperator(Q, T)
   end
 
-  class In(T) < BiOperator(T)
+  class In(Q, T) < BiOperator(Q, T)
   end
 
-  class UOperator < Query
+  class UOperator(Q) < Query
     getter query
 
-    def initialize(@query : Query)
+    def initialize(@query : Q)
     end
 
     def ==(other : self)
@@ -150,31 +150,31 @@ module Query
     end
   end
 
-  class Not < UOperator
+  class Not(Q) < UOperator(Q)
   end
 
-  class IsTrue < UOperator
+  class IsTrue(Q) < UOperator(Q)
   end
 
-  class IsNotTrue < UOperator
+  class IsNotTrue(Q) < UOperator(Q)
   end
 
-  class IsFalse < UOperator
+  class IsFalse(Q) < UOperator(Q)
   end
 
-  class IsNotFalse < UOperator
+  class IsNotFalse(Q) < UOperator(Q)
   end
 
-  class IsUnknown < UOperator
+  class IsUnknown(Q) < UOperator(Q)
   end
 
-  class IsNotUnknown < UOperator
+  class IsNotUnknown(Q) < UOperator(Q)
   end
 
-  class IsNull < UOperator
+  class IsNull(Q) < UOperator(Q)
   end
 
-  class IsNotNull < UOperator
+  class IsNotNull(Q) < UOperator(Q)
   end
 
   class Criteria < Query
