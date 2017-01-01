@@ -76,11 +76,18 @@ module Query
       )
     end
 
-    it "can be used to append things" do
+    it "can be used to append things in a LOOP from datastructure such as Hash" do
       q = EmptyQuery.new
-      q = q.& criteria("number_of_dependents") == 0
-      q = q.& criteria("age") == 25
-      q = q.& criteria("stuff") == "hello world"
+
+      query_hash = {
+        "number_of_dependents" => 0,
+        "age" => 25,
+        "stuff" => "hello world",
+      }
+
+      query_hash.each do |k, v|
+        q = q.& criteria(k) == v
+      end
 
       q.should eq(
         And.new(

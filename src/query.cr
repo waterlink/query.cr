@@ -87,7 +87,7 @@ module Query
     def initialize(@left : Q, @right : T)
     end
 
-    def ==(other : self)
+    def ==(other : BiOperator(Q2, T2)) forall Q2, T2
       EqualityHelper.equals(left, other.left) &&
         EqualityHelper.equals(right, other.right)
     end
@@ -137,7 +137,7 @@ module Query
     def initialize(@query : Q)
     end
 
-    def ==(other : self)
+    def ==(other : UOperator(Q2)) forall Q2
       EqualityHelper.equals(query, other.query)
     end
 
