@@ -10,7 +10,7 @@ Add this to your application's `shard.yml`:
 dependencies:
   query:
     github: waterlink/query.cr
-    version: ~> 0.1
+    version: ~> 0.2
 ```
 
 ## Usage
