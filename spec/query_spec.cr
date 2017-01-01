@@ -172,6 +172,14 @@ module Query
         one.should eq(two)
       end
     end
+
+    describe "#name" do
+      it "is a criteria name" do
+        age = criteria("age")
+        age.name.should eq("age")
+        age.name.should be_a(String)
+      end
+    end
   end
 
   describe Equals do

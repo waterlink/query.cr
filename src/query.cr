@@ -58,6 +58,14 @@ module Query
     def self.any_or_query(value : T) forall T
       AnyImp(T).new(value)
     end
+
+    def self.value_of(value : Any)
+      value.value
+    end
+
+    def self.value_of(value : T) forall T
+      value
+    end
   end
 
   class AnyImp(T) < Any
@@ -232,7 +240,7 @@ module Query
     bi_operator "in", In
 
     def name
-      left
+      Any.value_of(left)
     end
   end
 end
