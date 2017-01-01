@@ -33,7 +33,7 @@ module Query
     end
   end
 
-  module Query
+  class Query
     include MacroHelper
 
     bi_operator "&", And
@@ -59,9 +59,7 @@ module Query
     end
   end
 
-  class EmptyQuery
-    include Query
-
+  class EmptyQuery < Query
     def inspect(io)
       io << "EMPTY_QUERY"
     end
@@ -76,17 +74,13 @@ module Query
     empty_bi_operator "and"
     empty_bi_operator "|"
     empty_bi_operator "or"
-    empty_bi_operator "xor"
-    empty_bi_operator "^"
 
     def not : Query
       self
     end
   end
 
-  module BiOperator(Q, T)
-    include Query
-
+  class BiOperator(Q, T) < Query
     getter left
     getter right
 
@@ -107,49 +101,37 @@ module Query
     end
   end
 
-  class Equals(Q, T)
-    include BiOperator(Q, T)
+  class Equals(Q, T) < BiOperator(Q, T)
   end
 
-  class NotEquals(Q, T)
-    include BiOperator(Q, T)
+  class NotEquals(Q, T) < BiOperator(Q, T)
   end
 
-  class LessThan(Q, T)
-    include BiOperator(Q, T)
+  class LessThan(Q, T) < BiOperator(Q, T)
   end
 
-  class LessThanOrEqual(Q, T)
-    include BiOperator(Q, T)
+  class LessThanOrEqual(Q, T) < BiOperator(Q, T)
   end
 
-  class MoreThan(Q, T)
-    include BiOperator(Q, T)
+  class MoreThan(Q, T) < BiOperator(Q, T)
   end
 
-  class MoreThanOrEqual(Q, T)
-    include BiOperator(Q, T)
+  class MoreThanOrEqual(Q, T) < BiOperator(Q, T)
   end
 
-  class And(Q, T)
-    include BiOperator(Q, T)
+  class And(Q, T) < BiOperator(Q, T)
   end
 
-  class Or(Q, T)
-    include BiOperator(Q, T)
+  class Or(Q, T) < BiOperator(Q, T)
   end
 
-  class Xor(Q, T)
-    include BiOperator(Q, T)
+  class Xor(Q, T) < BiOperator(Q, T)
   end
 
-  class In(Q, T)
-    include BiOperator(Q, T)
+  class In(Q, T) < BiOperator(Q, T)
   end
 
-  module UOperator(Q)
-    include Query
-
+  class UOperator(Q) < Query
     getter query
 
     def initialize(@query : Q)
@@ -168,45 +150,34 @@ module Query
     end
   end
 
-  class Not(Q)
-    include UOperator(Q)
+  class Not(Q) < UOperator(Q)
   end
 
-  class IsTrue(Q)
-    include UOperator(Q)
+  class IsTrue(Q) < UOperator(Q)
   end
 
-  class IsNotTrue(Q)
-    include UOperator(Q)
+  class IsNotTrue(Q) < UOperator(Q)
   end
 
-  class IsFalse(Q)
-    include UOperator(Q)
+  class IsFalse(Q) < UOperator(Q)
   end
 
-  class IsNotFalse(Q)
-    include UOperator(Q)
+  class IsNotFalse(Q) < UOperator(Q)
   end
 
-  class IsUnknown(Q)
-    include UOperator(Q)
+  class IsUnknown(Q) < UOperator(Q)
   end
 
-  class IsNotUnknown(Q)
-    include UOperator(Q)
+  class IsNotUnknown(Q) < UOperator(Q)
   end
 
-  class IsNull(Q)
-    include UOperator(Q)
+  class IsNull(Q) < UOperator(Q)
   end
 
-  class IsNotNull(Q)
-    include UOperator(Q)
+  class IsNotNull(Q) < UOperator(Q)
   end
 
-  class Criteria
-    include Query
-
+  class Criteria < Query
     getter name
 
     def initialize(@name : String)
