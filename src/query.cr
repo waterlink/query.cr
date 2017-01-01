@@ -1,31 +1,35 @@
 module Query
   module CriteriaHelper
     def criteria(name)
-      Criteria.new(name)
+      Criteria[name]
     end
   end
 
   module MacroHelper
     macro bi_operator(name, klass)
       def {{name.id}}(other)
-        {{klass.id}}.new(self, other)
+        {{klass.id}}[self, other]
       end
     end
 
     macro u_operator(name, klass)
       def {{name.id}}
-        {{klass.id}}.new(self)
+        {{klass.id}}[self]
       end
     end
   end
 
   module EqualityHelper
-    def self.equals(left : Criteria, right : Criteria)
-      left.name == right.name
-    end
+    def self.equals(left : Query, right : Query)
+      if left.query_name != "Criteria"
+        return left == right
+      end
 
-    def self.equals(left : Criteria, right)
-      false
+      if right.query_name != "Criteria"
+        return false
+      end
+
+      left.left == right.left
     end
 
     def self.equals(left, right)
@@ -33,8 +37,65 @@ module Query
     end
   end
 
+  abstract class Any
+    abstract def inspect(io)
+    abstract def to_s(io)
+    abstract def equals(other)
+    abstract def value
+
+    def ==(other)
+      equals(other)
+    end
+
+    def self.any_or_query(value : Query)
+      value
+    end
+
+    def self.any_or_query(value : Any)
+      value
+    end
+
+    def self.any_or_query(value : T) forall T
+      AnyImp(T).new(value)
+    end
+  end
+
+  class AnyImp(T) < Any
+    getter value
+
+    def initialize(@value : T)
+    end
+
+    def inspect(io)
+      value.inspect(io)
+    end
+
+    def to_s(io)
+      value.to_s(io)
+    end
+
+    def equals(other)
+      if other.is_a?(AnyImp)
+        value == other.value
+      else
+        value == other
+      end
+    end
+  end
+
   class Query
     include MacroHelper
+
+    getter query_name
+    getter left
+    getter right
+
+    def initialize(@query_name : String, @left : Query|Any, @right : Query|Any)
+    end
+
+    def self.new_u_query(query_name, left : L) forall L
+      Query.new(query_name, left, AnyImp(Nil).new(nil))
+    end
 
     bi_operator "&", And
     bi_operator "and", And
@@ -54,14 +115,43 @@ module Query
     u_operator "is_null", IsNull
     u_operator "is_not_null", IsNotNull
 
+    def ==(other : Query)
+      query_name == other.query_name &&
+        EqualityHelper.equals(left, other.left) &&
+        EqualityHelper.equals(right, other.right)
+    end
+
+    def ==(other)
+      false
+    end
+
     def inspect(io)
-      io << "Query"
+      io << query_name
+
+      if !left.nil?
+        io << "<"
+        io << left.inspect
+
+        if !right.nil?
+          io << ", "
+          io << right.inspect
+        end
+
+        io << ">"
+      end
+
     end
   end
 
   class EmptyQuery < Query
-    def inspect(io)
-      io << "EMPTY_QUERY"
+    def initialize
+      @query_name = "EMPTY_QUERY"
+      @left = AnyImp(Nil).new(nil)
+      @right = AnyImp(Nil).new(nil)
+    end
+
+    def self.[]
+      EmptyQuery.new
     end
 
     macro empty_bi_operator(name)
@@ -78,113 +168,58 @@ module Query
     def not : Query
       self
     end
-  end
-
-  class BiOperator(Q, T) < Query
-    getter left
-    getter right
-
-    def initialize(@left : Q, @right : T)
-    end
-
-    def ==(other : BiOperator(Q2, T2)) forall Q2, T2
-      EqualityHelper.equals(left, other.left) &&
-        EqualityHelper.equals(right, other.right)
-    end
-
-    def ==(other)
-      false
-    end
 
     def inspect(io)
-      io << "#{self.class.name}<#{left.inspect}, #{right.inspect}>"
+      io << "EMPTY_QUERY"
     end
   end
 
-  class Equals(Q, T) < BiOperator(Q, T)
-  end
-
-  class NotEquals(Q, T) < BiOperator(Q, T)
-  end
-
-  class LessThan(Q, T) < BiOperator(Q, T)
-  end
-
-  class LessThanOrEqual(Q, T) < BiOperator(Q, T)
-  end
-
-  class MoreThan(Q, T) < BiOperator(Q, T)
-  end
-
-  class MoreThanOrEqual(Q, T) < BiOperator(Q, T)
-  end
-
-  class And(Q, T) < BiOperator(Q, T)
-  end
-
-  class Or(Q, T) < BiOperator(Q, T)
-  end
-
-  class Xor(Q, T) < BiOperator(Q, T)
-  end
-
-  class In(Q, T) < BiOperator(Q, T)
-  end
-
-  class UOperator(Q) < Query
-    getter query
-
-    def initialize(@query : Q)
-    end
-
-    def ==(other : UOperator(Q2)) forall Q2
-      EqualityHelper.equals(query, other.query)
-    end
-
-    def ==(other)
-      false
-    end
-
-    def inspect(io)
-      io << "#{self.class.name}<#{query.inspect}>"
+  macro bi_query(name)
+    class {{ name.id }}
+      def self.[](left, right)
+        Query.new({{ name.id.stringify }}, Any.any_or_query(left), Any.any_or_query(right))
+      end
     end
   end
 
-  class Not(Q) < UOperator(Q)
+  macro u_query(name)
+    class {{ name.id }}
+      def self.[](left)
+        Query.new_u_query({{ name.id.stringify }}, Any.any_or_query(left))
+      end
+    end
   end
 
-  class IsTrue(Q) < UOperator(Q)
-  end
+  bi_query Equals
+  bi_query NotEquals
+  bi_query LessThan
+  bi_query LessThanOrEqual
+  bi_query MoreThan
+  bi_query MoreThanOrEqual
+  bi_query And
+  bi_query Or
+  bi_query Xor
+  bi_query In
 
-  class IsNotTrue(Q) < UOperator(Q)
-  end
-
-  class IsFalse(Q) < UOperator(Q)
-  end
-
-  class IsNotFalse(Q) < UOperator(Q)
-  end
-
-  class IsUnknown(Q) < UOperator(Q)
-  end
-
-  class IsNotUnknown(Q) < UOperator(Q)
-  end
-
-  class IsNull(Q) < UOperator(Q)
-  end
-
-  class IsNotNull(Q) < UOperator(Q)
-  end
+  u_query Not
+  u_query IsTrue
+  u_query IsNotTrue
+  u_query IsFalse
+  u_query IsNotFalse
+  u_query IsUnknown
+  u_query IsNotUnknown
+  u_query IsNull
+  u_query IsNotNull
 
   class Criteria < Query
-    getter name
-
-    def initialize(@name : String)
+    def initialize(name : String)
+      @query_name = "Criteria"
+      @left = AnyImp(String).new(name)
+      @right = AnyImp(Nil).new(nil)
     end
 
-    def inspect(io)
-      io << "'#{name}'"
+    def self.[](name)
+      Criteria.new(name)
     end
 
     include MacroHelper
@@ -195,5 +230,9 @@ module Query
     bi_operator ">", MoreThan
     bi_operator ">=", MoreThanOrEqual
     bi_operator "in", In
+
+    def name
+      left
+    end
   end
 end

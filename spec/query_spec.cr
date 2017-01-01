@@ -6,39 +6,39 @@ module Query
   describe CriteriaHelper do
     it "can compare criteria to number" do
       (criteria("age") == 21).should eq(
-        Equals.new(Criteria.new("age"), 21)
+        Equals[Criteria["age"], 21]
       )
 
       (criteria("age") != 21).should eq(
-        NotEquals.new(Criteria.new("age"), 21)
+        NotEquals[Criteria["age"], 21]
       )
 
       (criteria("age") < 21).should eq(
-        LessThan.new(Criteria.new("age"), 21)
+        LessThan[Criteria["age"], 21]
       )
 
       (criteria("age") <= 21).should eq(
-        LessThanOrEqual.new(Criteria.new("age"), 21)
+        LessThanOrEqual[Criteria["age"], 21]
       )
 
       (criteria("age") > 21).should eq(
-        MoreThan.new(Criteria.new("age"), 21)
+        MoreThan[Criteria["age"], 21]
       )
 
       (criteria("age") >= 21).should eq(
-        MoreThanOrEqual.new(Criteria.new("age"), 21)
+        MoreThanOrEqual[Criteria["age"], 21]
       )
     end
 
     it "can compare criteria to a string" do
       (criteria("name") == "John Smith").should eq(
-        Equals.new(Criteria.new("name"), "John Smith")
+        Equals[Criteria["name"], "John Smith"]
       )
     end
 
     it "can compare criteria to another criteria" do
       (criteria("password") == criteria("confirmation")).should eq(
-        Equals.new(Criteria.new("password"), Criteria.new("confirmation"))
+        Equals[Criteria["password"], Criteria["confirmation"]]
       )
     end
   end
@@ -46,13 +46,13 @@ module Query
   describe Not do
     it "negates query" do
       ((criteria("password") == criteria("confirmation")).not).should eq(
-        Not.new(Equals.new(Criteria.new("password"), Criteria.new("confirmation")))
+        Not[Equals[Criteria["password"], Criteria["confirmation"]]]
       )
     end
 
     it "negates other query" do
       ((criteria("name") != "John Smith").not).should eq(
-        Not.new(NotEquals.new(Criteria.new("name"), "John Smith"))
+        Not[NotEquals[Criteria["name"], "John Smith"]]
       )
     end
 
@@ -66,13 +66,13 @@ module Query
   describe And do
     it "can intersect two queries" do
       ((criteria("age") >= 21) & (criteria("age") < 42)).should eq(
-        And.new((criteria("age") >= 21), (criteria("age") < 42))
+        And[(criteria("age") >= 21), (criteria("age") < 42)]
       )
     end
 
     it "is not the same as some other query with the same type signature" do
       ((criteria("age") >= 21) & (criteria("age") < 42)).should_not eq(
-        And.new((criteria("age") >= 19), (criteria("points") < 42))
+        And[(criteria("age") >= 19), (criteria("points") < 42)]
       )
     end
 
@@ -90,13 +90,13 @@ module Query
       end
 
       q.should eq(
-        And.new(
-          And.new(
+        And[
+          And[
             (criteria("number_of_dependents") == 0),
             (criteria("age") == 25)
-          ),
+          ],
           (criteria("stuff") == "hello world")
-        )
+        ]
       )
     end
   end
@@ -104,7 +104,7 @@ module Query
   describe Or do
     it "can unify two queries" do
       ((criteria("age") < 16) | (criteria("age") > 64)).should eq(
-        Or.new((criteria("age") < 16), (criteria("age") > 64))
+        Or[(criteria("age") < 16), (criteria("age") > 64)]
       )
     end
 
@@ -115,13 +115,13 @@ module Query
       q = q.| criteria("stuff") == "hello world"
 
       q.should eq(
-        Or.new(
-          Or.new(
+        Or[
+          Or[
             (criteria("number_of_dependents") == 0),
             (criteria("age") == 25)
-          ),
+          ],
           (criteria("stuff") == "hello world")
-        )
+        ]
       )
     end
   end
@@ -137,13 +137,13 @@ module Query
       q = q.| criteria("stuff") == "hello world"
 
       q.should eq(
-        Or.new(
-          And.new(
+        Or[
+          And[
             (criteria("number_of_dependents") == 0),
             (criteria("age") == 25)
-          ),
+          ],
           (criteria("stuff") == "hello world")
-        )
+        ]
       )
     end
   end
@@ -151,7 +151,7 @@ module Query
   describe IsTrue do
     it "works" do
       (criteria("has_dependents").is_true).should eq(
-        IsTrue.new(criteria("has_dependents"))
+        IsTrue[criteria("has_dependents")]
       )
     end
   end
@@ -159,28 +159,38 @@ module Query
   describe In do
     it "works" do
       (criteria("age").in([18, 19, 20, 21])).should eq(
-        In.new(criteria("age"), [18, 19, 20, 21])
+        In[criteria("age"), [18, 19, 20, 21]]
       )
+    end
+  end
+
+  describe Criteria do
+    describe "equality" do
+      it "is equal when names are equal" do
+        one = criteria("age")
+        two = criteria("age")
+        one.should eq(two)
+      end
     end
   end
 
   describe Equals do
     describe "equality" do
       it "is equal when both arguments are same" do
-        one = Equals.new(criteria("age"), 21)
-        two = Equals.new(criteria("age"), 21)
+        one = Equals[criteria("age"), 21]
+        two = Equals[criteria("age"), 21]
         one.should eq(two)
       end
 
       it "is not equal when first argument is not same" do
-        one = Equals.new(criteria("age"), 21)
-        two = Equals.new(criteria("strength"), 21)
+        one = Equals[criteria("age"), 21]
+        two = Equals[criteria("strength"), 21]
         one.should_not eq(two)
       end
 
       it "is not equal when second argument is not same" do
-        one = Equals.new(criteria("age"), 21)
-        two = Equals.new(criteria("age"), 42)
+        one = Equals[criteria("age"), 21]
+        two = Equals[criteria("age"), 42]
         one.should_not eq(two)
       end
     end
